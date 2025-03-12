@@ -1,5 +1,6 @@
 import {
   BoxGeometry,
+  CircleGeometry,
   Mesh,
   MeshStandardMaterial,
   Object3D,
@@ -12,6 +13,7 @@ import {
 } from "three";
 import "./index.css";
 import { FACTIONS } from "./config/factions";
+import { Reflector } from "three/examples/jsm/Addons.js";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -64,6 +66,16 @@ spot_light.position.set(0, 5, 0);
 spot_light.target.position.set(0, 0.5, -5);
 scene.add(spot_light);
 scene.add(spot_light.target);
+
+const mirror = new Reflector(new CircleGeometry(10), {
+  textureWidth: window.innerWidth,
+  textureHeight: window.innerHeight,
+  color: 0x303030,
+});
+mirror.position.y = -1.1;
+mirror.rotateX(-Math.PI / 2);
+scene.add(mirror);
+
 function animate() {
   root_box.rotation.y += 0.002;
   renderer.render(scene, camera);
@@ -73,4 +85,5 @@ window.addEventListener("resize", () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
+  mirror.getRenderTarget().setSize(window.innerWidth, window.innerHeight);
 });
