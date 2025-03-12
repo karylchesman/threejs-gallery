@@ -14,6 +14,8 @@ import {
 import "./index.css";
 import { FACTIONS } from "./config/factions";
 import { Reflector } from "three/examples/jsm/Addons.js";
+import caretLeft from "./assets/left.png";
+import caretRight from "./assets/right.png";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -35,6 +37,9 @@ const camera = new PerspectiveCamera(
 const root_box = new Object3D();
 scene.add(root_box);
 
+const left_texture = textureLoader.load(caretLeft);
+const right_texture = textureLoader.load(caretRight);
+
 const factions = Object.values(FACTIONS);
 for (let i = 0; i < factions.length; i++) {
   const current_faction = factions[i];
@@ -47,18 +52,32 @@ for (let i = 0; i < factions.length; i++) {
   root_box.add(faction_box);
 
   const border = new Mesh(
-    new BoxGeometry(3.2, 2.2, 0.09),
+    new BoxGeometry(3, 2.2, 0.005),
     new MeshStandardMaterial({ color: 0x202020 })
   );
   border.position.z = -4;
   faction_box.add(border);
 
   const faction_img = new Mesh(
-    new BoxGeometry(3, 2, 0.1),
+    new BoxGeometry(2.8, 2, 0.01),
     new MeshStandardMaterial({ map: texture })
   );
   faction_img.position.z = -4;
   faction_box.add(faction_img);
+
+  const left_button = new Mesh(
+    new BoxGeometry(0.3, 0.3, 0.01),
+    new MeshStandardMaterial({ map: left_texture, transparent: true })
+  );
+  left_button.position.set(-1.8, 0, -4);
+  faction_box.add(left_button);
+
+  const right_button = new Mesh(
+    new BoxGeometry(0.3, 0.3, 0.01),
+    new MeshStandardMaterial({ map: right_texture, transparent: true })
+  );
+  right_button.position.set(1.8, 0, -4);
+  faction_box.add(right_button);
 }
 
 const spot_light = new SpotLight(0xffffff, 100.0, 10.0, 0.65, 0.5);
@@ -77,7 +96,6 @@ mirror.rotateX(-Math.PI / 2);
 scene.add(mirror);
 
 function animate() {
-  root_box.rotation.y += 0.002;
   renderer.render(scene, camera);
 }
 
