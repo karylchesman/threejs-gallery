@@ -1,10 +1,11 @@
 import {
   BoxGeometry,
   Mesh,
-  MeshBasicMaterial,
+  MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
   Scene,
+  SpotLight,
   SRGBColorSpace,
   TextureLoader,
   WebGLRenderer,
@@ -45,19 +46,24 @@ for (let i = 0; i < factions.length; i++) {
 
   const border = new Mesh(
     new BoxGeometry(3.2, 2.2, 0.09),
-    new MeshBasicMaterial({ color: 0x202020 })
+    new MeshStandardMaterial({ color: 0x202020 })
   );
   border.position.z = -4;
   faction_box.add(border);
 
   const faction_img = new Mesh(
     new BoxGeometry(3, 2, 0.1),
-    new MeshBasicMaterial({ map: texture })
+    new MeshStandardMaterial({ map: texture })
   );
   faction_img.position.z = -4;
   faction_box.add(faction_img);
 }
 
+const spot_light = new SpotLight(0xffffff, 100.0, 10.0, 0.65, 0.5);
+spot_light.position.set(0, 5, 0);
+spot_light.target.position.set(0, 0.5, -5);
+scene.add(spot_light);
+scene.add(spot_light.target);
 function animate() {
   root_box.rotation.y += 0.002;
   renderer.render(scene, camera);
