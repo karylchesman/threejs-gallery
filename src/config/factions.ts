@@ -1,10 +1,10 @@
-import cabalBg from "../assets/images/cabal.jpg";
-import dreadBg from "../assets/images/dread.jpg";
-import fallenBg from "../assets/images/fallen.jpg";
-import hiveBg from "../assets/images/hive.jpg";
-import scornBg from "../assets/images/scorn.jpg";
-import takenBg from "../assets/images/taken.jpg";
-import vexBg from "../assets/images/vex.jpg";
+import cabalBg from "../assets/cabal.jpg";
+import dreadBg from "../assets/dread.jpg";
+import fallenBg from "../assets/fallen.jpg";
+import hiveBg from "../assets/hive.jpg";
+import scornBg from "../assets/scorn.jpg";
+import takenBg from "../assets/taken.jpg";
+import vexBg from "../assets/vex.jpg";
 
 export const FACTIONS = {
   cabal: {

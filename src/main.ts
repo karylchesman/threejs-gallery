@@ -1,31 +1,70 @@
-import * as THREE from "three";
+import {
+  BoxGeometry,
+  Mesh,
+  MeshBasicMaterial,
+  Object3D,
+  PerspectiveCamera,
+  Scene,
+  SRGBColorSpace,
+  TextureLoader,
+  WebGLRenderer,
+} from "three";
 import "./index.css";
+import { FACTIONS } from "./config/factions";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(
+const textureLoader = new TextureLoader();
+
+const renderer = new WebGLRenderer();
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setAnimationLoop(animate);
+app.appendChild(renderer.domElement);
+
+const scene = new Scene();
+const camera = new PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
 
-const renderer = new THREE.WebGLRenderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setAnimationLoop(animate);
-app.appendChild(renderer.domElement);
+const root_box = new Object3D();
+scene.add(root_box);
 
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-const cube = new THREE.Mesh(geometry, material);
-scene.add(cube);
+const factions = Object.values(FACTIONS);
+for (let i = 0; i < factions.length; i++) {
+  const current_faction = factions[i];
 
-camera.position.z = 5;
+  const texture = textureLoader.load(current_faction.bg);
+  texture.colorSpace = SRGBColorSpace;
+
+  const faction_box = new Object3D();
+  faction_box.rotation.y = i * ((2 * Math.PI) / factions.length);
+  root_box.add(faction_box);
+
+  const border = new Mesh(
+    new BoxGeometry(3.2, 2.2, 0.09),
+    new MeshBasicMaterial({ color: 0x202020 })
+  );
+  border.position.z = -4;
+  faction_box.add(border);
+
+  const faction_img = new Mesh(
+    new BoxGeometry(3, 2, 0.1),
+    new MeshBasicMaterial({ map: texture })
+  );
+  faction_img.position.z = -4;
+  faction_box.add(faction_img);
+}
 
 function animate() {
-  cube.rotation.x += 0.01;
-  cube.rotation.y += 0.01;
-
+  root_box.rotation.y += 0.002;
   renderer.render(scene, camera);
 }
+
+window.addEventListener("resize", () => {
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+});
