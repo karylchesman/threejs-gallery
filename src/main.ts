@@ -5,10 +5,12 @@ import {
   MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
+  Raycaster,
   Scene,
   SpotLight,
   SRGBColorSpace,
   TextureLoader,
+  Vector2,
   WebGLRenderer,
 } from "three";
 import "./index.css";
@@ -49,6 +51,7 @@ for (let i = 0; i < factions.length; i++) {
 
   const faction_box = new Object3D();
   faction_box.rotation.y = i * ((2 * Math.PI) / factions.length);
+  faction_box.name = `Faction-Box-${i}`;
   root_box.add(faction_box);
 
   const border = new Mesh(
@@ -56,6 +59,7 @@ for (let i = 0; i < factions.length; i++) {
     new MeshStandardMaterial({ color: 0x202020 })
   );
   border.position.z = -4;
+  border.name = `Faction-Box-Border-${i}`;
   faction_box.add(border);
 
   const faction_img = new Mesh(
@@ -63,6 +67,7 @@ for (let i = 0; i < factions.length; i++) {
     new MeshStandardMaterial({ map: texture })
   );
   faction_img.position.z = -4;
+  faction_img.name = `Faction-Box-Image-${i}`;
   faction_box.add(faction_img);
 
   const left_button = new Mesh(
@@ -70,6 +75,7 @@ for (let i = 0; i < factions.length; i++) {
     new MeshStandardMaterial({ map: left_texture, transparent: true })
   );
   left_button.position.set(-1.8, 0, -4);
+  left_button.name = `Faction-Box-Left`;
   faction_box.add(left_button);
 
   const right_button = new Mesh(
@@ -77,6 +83,7 @@ for (let i = 0; i < factions.length; i++) {
     new MeshStandardMaterial({ map: right_texture, transparent: true })
   );
   right_button.position.set(1.8, 0, -4);
+  right_button.name = `Faction-Box-Right`;
   faction_box.add(right_button);
 }
 
@@ -95,6 +102,20 @@ mirror.position.y = -1.1;
 mirror.rotateX(-Math.PI / 2);
 scene.add(mirror);
 
+/**
+ * @param direction 1 for right, -1 for left
+ */
+function rotateGallery(direction: 1 | -1) {
+  root_box.rotateY(
+    direction *
+      /* 
+      If the minus signal is not passed bellow, then the side of the rotation 
+      will be inverted in relation to the function params definition
+      */
+      -((2 * Math.PI) / factions.length)
+  );
+}
+
 function animate() {
   renderer.render(scene, camera);
 }
@@ -104,4 +125,22 @@ window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   mirror.getRenderTarget().setSize(window.innerWidth, window.innerHeight);
+});
+
+window.addEventListener("click", (event) => {
+  const ray_caster = new Raycaster();
+  const mouse_ndc = new Vector2(
+    (event.clientX / window.innerWidth) * 2 - 1,
+    -(event.clientY / window.innerHeight) * 2 + 1
+  );
+  ray_caster.setFromCamera(mouse_ndc, camera);
+  const intersections = ray_caster.intersectObject(root_box, true);
+  if (intersections.length > 0) {
+    if (intersections[0].object.name === "Faction-Box-Left") {
+      rotateGallery(-1);
+    }
+    if (intersections[0].object.name === "Faction-Box-Right") {
+      rotateGallery(1);
+    }
+  }
 });
