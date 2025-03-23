@@ -18,8 +18,17 @@ import { FACTIONS } from "./config/factions";
 import { Reflector } from "three/examples/jsm/Addons.js";
 import caretLeft from "./assets/left.png";
 import caretRight from "./assets/right.png";
+import { Easing, Tween, Group as TweenGroup } from "@tweenjs/tween.js";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
+
+const titleElement = document.createElement("h1");
+titleElement.classList.add("faction-name");
+const descriptionElement = document.createElement("p");
+descriptionElement.classList.add("faction-description");
+
+app.appendChild(titleElement);
+app.appendChild(descriptionElement);
 
 const textureLoader = new TextureLoader();
 
@@ -43,6 +52,10 @@ const left_texture = textureLoader.load(caretLeft);
 const right_texture = textureLoader.load(caretRight);
 
 const factions = Object.values(FACTIONS);
+
+titleElement.innerText = factions[0].name;
+descriptionElement.innerText = factions[0].description;
+
 for (let i = 0; i < factions.length; i++) {
   const current_faction = factions[i];
 
@@ -76,6 +89,7 @@ for (let i = 0; i < factions.length; i++) {
   );
   left_button.position.set(-1.8, 0, -4);
   left_button.name = `Faction-Box-Left`;
+  left_button.userData = { index: i === factions.length - 1 ? 0 : i + 1 };
   faction_box.add(left_button);
 
   const right_button = new Mesh(
@@ -84,6 +98,7 @@ for (let i = 0; i < factions.length; i++) {
   );
   right_button.position.set(1.8, 0, -4);
   right_button.name = `Faction-Box-Right`;
+  right_button.userData = { index: i === 0 ? factions.length - 1 : i - 1 };
   faction_box.add(right_button);
 }
 
@@ -102,21 +117,36 @@ mirror.position.y = -1.1;
 mirror.rotateX(-Math.PI / 2);
 scene.add(mirror);
 
+const tween_group = new TweenGroup();
+
 /**
  * @param direction 1 for right, -1 for left
  */
-function rotateGallery(direction: 1 | -1) {
-  root_box.rotateY(
-    direction *
-      /* 
-      If the minus signal is not passed bellow, then the side of the rotation 
-      will be inverted in relation to the function params definition
-      */
-      -((2 * Math.PI) / factions.length)
-  );
+function rotateGallery(direction: 1 | -1, new_index: number) {
+  const delta_y = direction * ((2 * Math.PI) / factions.length);
+
+  const tween = new Tween(root_box.rotation)
+    .to({
+      y: root_box.rotation.y + delta_y,
+    })
+    .easing(Easing.Quadratic.InOut)
+    .start()
+    .onStart(() => {
+      titleElement.style.opacity = "0";
+      descriptionElement.style.opacity = "0";
+    })
+    .onComplete(() => {
+      titleElement.innerText = factions[new_index].name;
+      descriptionElement.innerText = factions[new_index].description;
+
+      titleElement.style.opacity = "1";
+      descriptionElement.style.opacity = "1";
+    });
+  tween_group.add(tween);
 }
 
 function animate() {
+  tween_group.update();
   renderer.render(scene, camera);
 }
 
@@ -136,11 +166,14 @@ window.addEventListener("click", (event) => {
   ray_caster.setFromCamera(mouse_ndc, camera);
   const intersections = ray_caster.intersectObject(root_box, true);
   if (intersections.length > 0) {
+    const obj = intersections[0].object;
+    const new_index = obj.userData.index as number;
+
     if (intersections[0].object.name === "Faction-Box-Left") {
-      rotateGallery(-1);
+      rotateGallery(-1, new_index);
     }
     if (intersections[0].object.name === "Faction-Box-Right") {
-      rotateGallery(1);
+      rotateGallery(1, new_index);
     }
   }
 });
