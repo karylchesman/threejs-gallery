@@ -121,6 +121,7 @@ const tween_group = new TweenGroup();
 
 /**
  * @param direction 1 for right, -1 for left
+ * @param new_index The index of the new faction
  */
 function rotateGallery(direction: 1 | -1, new_index: number) {
   const delta_y = direction * ((2 * Math.PI) / factions.length);
@@ -159,21 +160,25 @@ window.addEventListener("resize", () => {
 
 window.addEventListener("click", (event) => {
   const ray_caster = new Raycaster();
-  const mouse_ndc = new Vector2(
+
+  /**
+   * @description Normalized device coordinates
+   */
+  const ndc_mouse_position = new Vector2(
     (event.clientX / window.innerWidth) * 2 - 1,
     -(event.clientY / window.innerHeight) * 2 + 1
   );
-  ray_caster.setFromCamera(mouse_ndc, camera);
+
+  ray_caster.setFromCamera(ndc_mouse_position, camera);
+
   const intersections = ray_caster.intersectObject(root_box, true);
   if (intersections.length > 0) {
     const obj = intersections[0].object;
     const new_index = obj.userData.index as number;
 
-    if (intersections[0].object.name === "Faction-Box-Left") {
-      rotateGallery(-1, new_index);
-    }
-    if (intersections[0].object.name === "Faction-Box-Right") {
-      rotateGallery(1, new_index);
+    if (obj.name === "Faction-Box-Left" || obj.name === "Faction-Box-Right") {
+      const direction = obj.name === "Faction-Box-Left" ? -1 : 1;
+      rotateGallery(direction, new_index);
     }
   }
 });
